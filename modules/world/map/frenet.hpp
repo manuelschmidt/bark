@@ -7,6 +7,7 @@
 #define MODULES_WORLD_MAP_FRENET_HPP_
 
 #include "modules/geometry/line.hpp"
+#include "modules/models/dynamic/dynamic_model.hpp"
 
 
 namespace modules {
@@ -32,12 +33,15 @@ FrenetState(const double& longitudinal, const double& lateral,
                  FrenetPosition(longitudinal, lateral),
                  vlon(vlongitudinal),
                  vlat(vlateral) {}
-FrenetState(const modules::models::dynamic& state, const modules::geometry::Line& path);
+FrenetState(const modules::models::dynamic::State& state, const modules::geometry::Line& path);
 
 double vlon;
 double vlat;
 
 };
+
+modules::models::dynamic::State FrenetStateToDynamicState(
+      const FrenetState& frenet_state,  const modules::geometry::Line& path);
 
 }  // namespace map
 }  // namespace world

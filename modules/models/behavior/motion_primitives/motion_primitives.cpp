@@ -88,13 +88,12 @@ dynamic::Trajectory BehaviorMotionPrimitives::PlanFrenetPosition(
   using modules::geometry::Point2d;
   
   const dynamic::State ego_vehicle_state = observed_world.current_ego_state();
-  const Point2d ego_vehicle_pos = observed_world.current_ego_position();
   double start_time = observed_world.get_world_time();
    const float dt = integration_time_delta_; 
   const int num_trajectory_points = static_cast<int>(std::ceil(delta_time / dt))+1;
 
   geometry::Line center_line = observed_world.get_local_map()->get_driving_corridor().get_center();
-  const FrenetPosition current_frenet_coord(ego_vehicle_pos, center_line);
+  const FrenetState current_frenet_state(ego_vehicle_state, center_line);
 
   dynamic::Trajectory traj(num_trajectory_points, int(dynamic::StateDefinition::MIN_STATE_SIZE));
   auto frenet_input = motion_primitives_[active_motion_];
@@ -104,8 +103,8 @@ dynamic::Trajectory BehaviorMotionPrimitives::PlanFrenetPosition(
     float s_start  = current_frenet_coord.lon;
     float start_time = observed_world.get_world_time();
     const float current_vel = ego_vehicle_state(StateDefinition::VEL_POSITION);
-    float current_long_vel = ?;
-    float current_lat_dist = current_frenet_coord.lat;
+    float current_long_vel = start_frenet_state.vlon;
+    float current_lat_dist = start_frenet_coord.lat;
     const float longitudinal_acceleration = frenet_input[0];
     const float lat_direction = frenet_input[1];
     float lateral_velocity = 0.0f; 

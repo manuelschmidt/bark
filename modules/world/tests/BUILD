@@ -113,6 +113,19 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "frenet_test",
+    srcs = [
+        "frenet_test.cc",
+    ],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "//modules/geometry",
+        "//modules/world/map:frenet",
+        "@gtest//:main",
+    ],
+)
+
 py_test(
   name = "py_opendrive_tests",
   srcs = ["py_opendrive_tests.py"],

@@ -63,7 +63,7 @@ cc_library(
     deps = [
         "//modules/geometry",
         "//modules/world/opendrive",
-        "//modules/models/dynamic"
+        "//modules/models/dynamic",
         "@boost//:geometry",
     ],
     linkstatic = 1,
