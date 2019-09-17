@@ -82,7 +82,7 @@ class ObservedWorld : public World {
       return World::get_agents()[ego_agent_id_]->get_current_position();
     }
 
-    std::pair<AgentPtr, modules::world::map::Frenet> get_agent_in_front() const;
+    std::pair<AgentPtr, modules::world::map::FrenetPosition> get_agent_in_front() const;
 
     void SetupPrediction(const PredictionSettings& settings);
     std::shared_ptr<ObservedWorld> Predict(float time_span, const DiscreteAction& ego_action) const;

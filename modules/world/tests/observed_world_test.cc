@@ -85,7 +85,7 @@ TEST(observed_world, agent_in_front)
   WorldPtr current_world_state(world->Clone());
   ObservedWorld observed_world(*current_world_state, agent1->get_agent_id());
 
-  std::pair<AgentPtr, Frenet> leading_vehicle = observed_world.get_agent_in_front();
+  std::pair<AgentPtr, FrenetPosition> leading_vehicle = observed_world.get_agent_in_front();
   EXPECT_FALSE(static_cast<bool>(leading_vehicle.first));
 
   agent1->UpdateDrivingCorridor(8.0);
@@ -93,7 +93,7 @@ TEST(observed_world, agent_in_front)
   WorldPtr current_world_state2(world->Clone());
   ObservedWorld observed_world2(*current_world_state2, agent1->get_agent_id());
 
-  std::pair<AgentPtr, Frenet> leading_vehicle2 = observed_world2.get_agent_in_front();
+  std::pair<AgentPtr, FrenetPosition> leading_vehicle2 = observed_world2.get_agent_in_front();
   EXPECT_TRUE(static_cast<bool>(leading_vehicle2.first));
   EXPECT_EQ(leading_vehicle2.first->get_agent_id(), agent2->get_agent_id());
 
@@ -107,7 +107,7 @@ TEST(observed_world, agent_in_front)
   WorldPtr current_world_state3(world->Clone());
   ObservedWorld observed_world3(*current_world_state2, agent1->get_agent_id());
 
-  std::pair<AgentPtr, Frenet> leading_vehicle3 = observed_world3.get_agent_in_front();
+  std::pair<AgentPtr, FrenetPosition> leading_vehicle3 = observed_world3.get_agent_in_front();
   EXPECT_TRUE(static_cast<bool>(leading_vehicle3.first));
   EXPECT_EQ(leading_vehicle2.first->get_agent_id(), agent2->get_agent_id());
 

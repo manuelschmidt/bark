@@ -23,7 +23,7 @@ class BehaviorIDMClassic : public BehaviorLongitudinalAcceleration {
 
   virtual double CalculateLongitudinalAcceleration(const world::ObservedWorld& observed_world);
 
-  std::pair<world::objects::AgentPtr, modules::world::map::Frenet> GetLeadingVehicle(const world::ObservedWorld& observed_world);
+  std::pair<world::objects::AgentPtr, modules::world::map::FrenetPosition> GetLeadingVehicle(const world::ObservedWorld& observed_world);
 
   const double get_desired_velocity() {return 15.0f;} // // unit is meter/second
   const float get_minimum_spacing() {return 2.0f;} // unit is meter

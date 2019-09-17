@@ -39,7 +39,7 @@ double BehaviorIDMClassic::CalculateLongitudinalAcceleration(const ObservedWorld
     // Leading vehicle exists in driving corridor, we calculate interaction term
 
     const State lead_state = leading_vehicle.first->get_current_state();
-    modules::world::map::Frenet lead_veh_frenet = leading_vehicle.second;
+    modules::world::map::FrenetPosition lead_veh_frenet = leading_vehicle.second;
 
     const float vehicle_length = observed_world.get_ego_agent()->get_shape().front_dist_ +
                                   leading_vehicle.first->get_shape().rear_dist_;
@@ -58,8 +58,8 @@ double BehaviorIDMClassic::CalculateLongitudinalAcceleration(const ObservedWorld
   return max_acceleration * ( 1 - pow(ego_velocity / desired_velocity, exponent) - interaction_term);
 }
 
-std::pair<AgentPtr, modules::world::map::Frenet> BehaviorIDMClassic::GetLeadingVehicle(const ObservedWorld& observed_world) {
-  std::pair<AgentPtr, modules::world::map::Frenet> leading_vehicle = observed_world.get_agent_in_front();
+std::pair<AgentPtr, modules::world::map::FrenetPosition> BehaviorIDMClassic::GetLeadingVehicle(const ObservedWorld& observed_world) {
+  std::pair<AgentPtr, modules::world::map::FrenetPosition> leading_vehicle = observed_world.get_agent_in_front();
   return leading_vehicle;
 }
 

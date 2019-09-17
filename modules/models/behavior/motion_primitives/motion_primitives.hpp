@@ -31,6 +31,12 @@ class BehaviorMotionPrimitives : public BehaviorModel {
   virtual Trajectory Plan(float delta_time,
                  const ObservedWorld& observed_world);
 
+  Trajectory PlanContinuous(float delta_time,
+                 const ObservedWorld& observed_world);
+
+  Trajectory PlanFrenetPosition(float delta_time,
+                 const ObservedWorld& observed_world);
+
   typedef unsigned int MotionIdx;
   MotionIdx AddMotionPrimitive(const Input& dynamic_input);
   MotionIdx GetNumMotionPrimitives() const {return motion_primitives_.size();}

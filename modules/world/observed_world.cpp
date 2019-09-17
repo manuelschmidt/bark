@@ -13,21 +13,21 @@ namespace world {
 
 using modules::geometry::Polygon;
 using modules::world::AgentMap;
-using modules::world::map::Frenet;
+using modules::world::map::FrenetPosition;
 
-std::pair<AgentPtr, modules::world::map::Frenet> ObservedWorld::get_agent_in_front() const {
+std::pair<AgentPtr, modules::world::map::FrenetPosition> ObservedWorld::get_agent_in_front() const {
   State ego_state = current_ego_state();
 
   const auto& driving_corridor = get_local_map()->get_horizon_driving_corridor();
   const Polygon& corridor_polygon = driving_corridor.CorridorPolygon(); 
   AgentMap intersecting_agents =  GetAgentsIntersectingPolygon(corridor_polygon);
   if(intersecting_agents.size() == 0) {
-    return std::make_pair(AgentPtr(nullptr), Frenet(std::numeric_limits<double>::max(),
+    return std::make_pair(AgentPtr(nullptr), FrenetPosition(std::numeric_limits<double>::max(),
                                               std::numeric_limits<double>::max()));
   }
 
   
-  Frenet frenet_ego = driving_corridor.FrenetFromCenterLine(current_ego_position());
+  FrenetPosition frenet_ego = driving_corridor.FrenetPositionFromCenterLine(current_ego_position());
   double nearest_lon = std::numeric_limits<double>::max();
   double nearest_lat = std::numeric_limits<double>::max();
 
@@ -38,7 +38,7 @@ std::pair<AgentPtr, modules::world::map::Frenet> ObservedWorld::get_agent_in_fro
       continue;
     }
 
-    Frenet frenet_other = driving_corridor.FrenetFromCenterLine(aiter->second->get_current_position());
+    FrenetPosition frenet_other = driving_corridor.FrenetPositionFromCenterLine(aiter->second->get_current_position());
     double long_dist = frenet_other.lon - frenet_ego.lon;
     double lat_dist = frenet_other.lat - frenet_ego.lat;
 
@@ -48,7 +48,7 @@ std::pair<AgentPtr, modules::world::map::Frenet> ObservedWorld::get_agent_in_fro
       nearest_agent = aiter->second;
     }
   }
-  return std::make_pair(nearest_agent, Frenet(nearest_lon, nearest_lat));
+  return std::make_pair(nearest_agent, FrenetPosition(nearest_lon, nearest_lat));
 }
 
 void ObservedWorld::SetupPrediction(const PredictionSettings& settings) {

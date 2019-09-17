@@ -22,23 +22,23 @@ TEST(driving_corridor_frenet, local_map) {
   corridor.set_center(line);
 
   
-  Frenet frenet = corridor.FrenetFromCenterLine(Point2d(5,2.5));
+  FrenetPosition frenet = corridor.FrenetPositionFromCenterLine(Point2d(5,2.5));
 
   EXPECT_EQ(frenet.lon, 4);
   EXPECT_EQ(frenet.lat, 2.5);
 
-  Frenet frenet2 = corridor.FrenetFromCenterLine(Point2d(1,2.5));
+  FrenetPosition frenet2 = corridor.FrenetPositionFromCenterLine(Point2d(1,2.5));
 
   EXPECT_EQ(frenet2.lon, 0);
   EXPECT_EQ(frenet2.lat, 2.5);
 
-  Frenet frenet3 = corridor.FrenetFromCenterLine(Point2d(10, 0));
+  FrenetPosition frenet3 = corridor.FrenetPositionFromCenterLine(Point2d(10, 0));
 
   EXPECT_EQ(frenet3.lon, 9);
   EXPECT_EQ(frenet3.lat, 0);
 
 
-  Frenet frenet4 = corridor.FrenetFromCenterLine(Point2d(3.5,-4));
+  FrenetPosition frenet4 = corridor.FrenetPositionFromCenterLine(Point2d(3.5,-4));
 
   EXPECT_EQ(frenet4.lon, 2.5);
   EXPECT_EQ(frenet4.lat, -4);
