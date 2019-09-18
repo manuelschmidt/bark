@@ -104,7 +104,7 @@ local_repository(
 # ------ Planner UCT --------------
 git_repository(
     name = "planner_uct",
-    branch="master",
+    commit="8b1591f6ddd8b2b69fda33702c6941efa6da8a1e",
     remote = "https://github.com/bark-simulator/planner-mcts"
 )
 load("@planner_uct//util:deps.bzl", "planner_uct_rules_dependencies")

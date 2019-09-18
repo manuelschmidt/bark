@@ -11,7 +11,7 @@ using namespace modules::geometry;
 using namespace modules::models::dynamic;
 using st = modules::models::dynamic::StateDefinition;
 
-void test_state(const float x, const float y,
+void test_state_two_way(const float x, const float y,
                 const float theta, const float v,
                 const Line& line) {
   State state(static_cast<int>(st::MIN_STATE_SIZE));
@@ -26,7 +26,35 @@ void test_state(const float x, const float y,
   EXPECT_NEAR(state(st::THETA_POSITION),state_conv(st::THETA_POSITION),0.001);
 }
 
-TEST(frenet_state, straight_line_right) {
+void test_state_one_way(const float x, const float y,
+                const float theta, const float v,
+                const Line& line, const float lat, 
+                const float lon, const float vlat,
+                const float vlon) {
+  State state(static_cast<int>(st::MIN_STATE_SIZE));
+  state << 0.0f, x, y, theta, v;
+
+  FrenetState frenet_state(state, line);
+
+  EXPECT_NEAR(frenet_state.lat, lat, 0.001);
+  EXPECT_NEAR(frenet_state.lon, lon, 0.001);
+  EXPECT_NEAR(frenet_state.vlat, vlat, 0.001);
+  EXPECT_NEAR(frenet_state.vlon, vlon,0.001);
+}
+
+TEST(frenet_state_one_way, correct_decomposition) {
+
+  // some line with three points from x=1 to x=10, y=0
+  Line line;
+  line.add_point(Point2d(1,1));
+  line.add_point(Point2d(2,2));
+  line.add_point(Point2d(4,4));
+
+  // state on path with orientation on path
+  test_state_one_way(1 , 0, atan2(1,1), 5, line);
+}
+
+TEST(frenet_state_two_way, straight_line_right) {
 
   // some line with three points from x=1 to x=10, y=0
   Line line;
@@ -35,16 +63,16 @@ TEST(frenet_state, straight_line_right) {
   line.add_point(Point2d(10,0));
 
   // state on path with orientation on path
-  test_state(3, 0, 0, 5, line);
+  test_state_two_way(3, 0, 0, 5, line);
 
   // state on left side of path with orientation on path
-  test_state(2.5, 1, 0, 5, line);
+  test_state_two_way(2.5, 1, 0, 5, line);
 
    // state on right side of path with orientation on path
-  test_state(8.2, -1, 0, 5, line);
+  test_state_two_way(8.2, -1, 0, 5, line);
 }
 
-TEST(frenet_state, straight_line_top) {
+TEST(frenet_state_two_way, straight_line_top) {
 
   // some line with three points from x=1 to x=10, y=0
   Line line;
@@ -52,14 +80,31 @@ TEST(frenet_state, straight_line_top) {
   line.add_point(Point2d(0,2));
   line.add_point(Point2d(0,10));
 
-  std::cout <<"test";
-
   // state on path with orientation on path
-  test_state(0 , 3, B_PI_2, 5, line);
+  test_state_two_way(0 , 3, B_PI_2, 5, line);
 
   // state on left side of path with orientation on path
-  test_state(1, 4, B_PI_2, 5, line);
+  test_state_two_way(1, 4, B_PI_2, 5, line);
 
    // state on right side of path with orientation on path
-  test_state(-1, 5, B_PI_2, 5, line);
+  test_state_two_way(-1, 5, B_PI_2, 5, line);
+}
+
+TEST(frenet_state_two_way, straight_line_top_right) {
+
+  // some line with three points from x=1 to x=10, y=0
+  Line line;
+  line.add_point(Point2d(-4,-2));
+  line.add_point(Point2d(-2,-1));
+  line.add_point(Point2d(2,1));
+  line.add_point(Point2d(4,2));
+
+  // state on path with orientation on path
+  test_state_two_way(1 , 0.5, B_PI_2, 5.5, line);
+
+  // state on left side of path with orientation on path
+  test_state_two_way(1, 4, B_PI_2, 5, line);
+
+  // state on right side of path with orientation on path
+  //test_state_two_way(-1, 5, B_PI_2, 5, line);
 }
