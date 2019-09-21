@@ -73,7 +73,7 @@ TEST(behavior_motion_primitives_plan, behavior_test) {
   Trajectory traj1 = behavior.Plan(0.5, world);
   EXPECT_NEAR(traj1(traj1.rows() - 1,
                     StateDefinition::X_POSITION),
-              2/2*0.5*0.5, 0.05);
+              2/2*0.5*0.5, 0.01);
 
   // X Longitudinal with nonzero velocity
   init_state << 0.0, 0.0, 0.0, 0.0, 5.0;
@@ -82,7 +82,7 @@ TEST(behavior_motion_primitives_plan, behavior_test) {
   traj1 = behavior.Plan(0.5, world1);
   EXPECT_NEAR(traj1(traj1.rows() - 1,
                     StateDefinition::X_POSITION),
-              5.0*0.5 + 2/2*0.5*0.5, 0.05);
+              5.0*0.5 + 2/2*0.5*0.5, 0.01);
 
   // Y Longitudinal
   init_state << 0.0, 0.0, 0.0, B_PI_2, 0.0;
@@ -91,7 +91,7 @@ TEST(behavior_motion_primitives_plan, behavior_test) {
   traj1 = behavior.Plan(0.5, world2);
   EXPECT_NEAR(traj1(traj1.rows() - 1,
                     StateDefinition::Y_POSITION),
-              2/2*0.5*0.5, 0.05);
+              2/2*0.5*0.5, 0.01);
 }
 
 int main(int argc, char **argv) {
