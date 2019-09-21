@@ -34,7 +34,7 @@ class BehaviorMotionPrimitives : public BehaviorModel {
   Trajectory PlanContinuous(float delta_time,
                  const ObservedWorld& observed_world);
 
-  Trajectory PlanFrenetPosition(float delta_time,
+  Trajectory PlanFrenet(float delta_time,
                  const ObservedWorld& observed_world);
 
   typedef unsigned int MotionIdx;
@@ -47,9 +47,10 @@ private:
   DynamicModelPtr dynamic_model_;
   std::vector<Input> motion_primitives_; 
   MotionIdx active_motion_;
-
+  
   // Parameters
   float integration_time_delta_;
+  bool use_frenet_motions_;
 };
 
 inline BehaviorModel *BehaviorMotionPrimitives::Clone() const {

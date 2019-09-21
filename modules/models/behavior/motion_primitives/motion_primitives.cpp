@@ -20,18 +20,17 @@ BehaviorMotionPrimitives::BehaviorMotionPrimitives(const DynamicModelPtr& dynami
     motion_primitives_(),
     active_motion_(),
     integration_time_delta_(params->get_real("BehaviorMotionPrimitives::integration_time_delta",
-                                             "the size of the time steps used within the euler integration loop", 0.02)),
-    use_frenet_motions(params->get_bool("BehaviorMotionPrimitives::use_frenet_motions",
-                                             "If true motion primitives inputs are interpreted as longitudinal acceleration 
-                                                and lateral velocity.", false))
+                                             "the size of the time steps used within the euler integration loop", 0.001)),
+    use_frenet_motions_(params->get_bool("BehaviorMotionPrimitives::use_frenet_motions",
+          "If true motion primitives inputs are interpreted as longitudinal acceleration and lateral velocity.", false))
     {}
 
 dynamic::Trajectory BehaviorMotionPrimitives::Plan(float delta_time,
     const world::ObservedWorld& observed_world) {
-      if(use_frenet_motions) {
-        return PlanContinuous(delta_time, observed_world);
+      if(use_frenet_motions_) {
+        return PlanFrenet(delta_time, observed_world);
       } else {
-        return PlanFrenetPosition(delta_time, observed_world);
+        return PlanContinuous(delta_time, observed_world);
       }
     }
 
@@ -41,7 +40,7 @@ dynamic::Trajectory BehaviorMotionPrimitives::PlanContinuous(
   dynamic::State ego_vehicle_state = observed_world.current_ego_state();
   double start_time = observed_world.get_world_time();
    const float dt = integration_time_delta_; 
-  const int num_trajectory_points = static_cast<int>(std::ceil(delta_time / dt))+1;
+  const int num_trajectory_points = static_cast<int>(std::floor(delta_time / dt));
 
   dynamic::Trajectory traj(num_trajectory_points, int(dynamic::StateDefinition::MIN_STATE_SIZE));
 
@@ -65,6 +64,7 @@ dynamic::Trajectory BehaviorMotionPrimitives::PlanContinuous(
     float integration_time = dt;
     if(trajectory_idx == num_trajectory_points-1) {
       integration_time = delta_time - trajectory_idx*dt;
+      BARK_EXPECT_TRUE(integration_time > 0);
     }
     
     auto state = dynamic::euler_int(*dynamic_model_, old_state, motion_primitives_[active_motion_], integration_time);
@@ -81,63 +81,59 @@ dynamic::Trajectory BehaviorMotionPrimitives::PlanContinuous(
   return traj;
 }
 
-dynamic::Trajectory BehaviorMotionPrimitives::PlanFrenetPosition(
+dynamic::Trajectory BehaviorMotionPrimitives::PlanFrenet(
     float delta_time,
     const world::ObservedWorld& observed_world) {
-  using modules::world::map::FrenetPosition;
+  using modules::world::map::FrenetState;
+  using modules::world::map::FrenetStateToDynamicState;
   using modules::geometry::Point2d;
   
+  const geometry::Line& center_line = observed_world.get_local_map()->get_driving_corridor().get_center();
+  BARK_EXPECT_TRUE(!center_line.obj_.empty());
+
+  // define running states
   const dynamic::State ego_vehicle_state = observed_world.current_ego_state();
-  double start_time = observed_world.get_world_time();
-   const float dt = integration_time_delta_; 
-  const int num_trajectory_points = static_cast<int>(std::ceil(delta_time / dt))+1;
-
-  geometry::Line center_line = observed_world.get_local_map()->get_driving_corridor().get_center();
   const FrenetState current_frenet_state(ego_vehicle_state, center_line);
+  float current_long_vel = current_frenet_state.vlon;
+  float current_lat_dist = current_frenet_state.lat;
 
-  dynamic::Trajectory traj(num_trajectory_points, int(dynamic::StateDefinition::MIN_STATE_SIZE));
+  // define input dynamic variables
   auto frenet_input = motion_primitives_[active_motion_];
+  const float longitudinal_acceleration = frenet_input[0];
+  const float lat_direction = frenet_input[1];
+  float lateral_velocity = 0.0f; 
+  if(lat_direction == 0.0f) {
+    lateral_velocity=0.0f;
+  } else if (lat_direction < 0.0f) {
+    lateral_velocity = + std::max(0.17*current_long_vel, 0.5); // From konsti paper
+  } else {
+    lateral_velocity = - std::max(0.17*current_long_vel, 0.5); // From konsti paper
+  }
 
-  // check whether linestring is empty
-  if (line.obj_.size()>0) {
-    float s_start  = current_frenet_coord.lon;
-    float start_time = observed_world.get_world_time();
-    const float current_vel = ego_vehicle_state(StateDefinition::VEL_POSITION);
-    float current_long_vel = start_frenet_state.vlon;
-    float current_lat_dist = start_frenet_coord.lat;
-    const float longitudinal_acceleration = frenet_input[0];
-    const float lat_direction = frenet_input[1];
-    float lateral_velocity = 0.0f; 
-    if(lat_direction == 0.0f) {
-      lateral_velocity=0.0f;
-    } else if (lat_direction < 0.0f) {
-      lateral_velocity = + std::max(0.17*current_long_vel, 0.5); // From konsti paper
-    } else {
-      lateral_velocity = - std::max(0.17*current_long_vel, 0.5); // From konsti paper
-    }
-    BARK_EXPECT_TRUE(!std::isnan(acceleration));
-    float sline = s_start;
-    // v = s/t
-    float run_time = start_time;
-    for (int i = 0; i < traj.rows(); i++) {
-      sline = sline + current_long_vel * sample_time;
-      geometry::Point2d line_point = get_point_at_s(line, sline); 
-      geometry::Point2d normal = get_normal_at_s(line, sline);
-      float traj_angle = 
-      traj(i, StateDefinition::TIME_POSITION) = run_time; 
-      BARK_EXPECT_TRUE(!std::isnan(boost::geometry::get<0>(traj_point)));
-      BARK_EXPECT_TRUE(!std::isnan(boost::geometry::get<1>(traj_point)));
-      traj(i, StateDefinition::X_POSITION) = boost::geometry::get<0>(traj_point);
-      traj(i, StateDefinition::Y_POSITION) = boost::geometry::get<1>(traj_point);
-      traj(i, StateDefinition::THETA_POSITION) = traj_angle;
-      traj(i, StateDefinition::VEL_POSITION) = current_vel;
-      current_lat_dist = current_lat_dist + lateral_velocity * sample_time;
-      current_long_vel = current_long_vel + longitudinal_acceleration * sample_time;
-      run_time += sample_time;
-    }
+  // integration
+  float s_start  = current_frenet_state.lon;
+  float start_time = observed_world.get_world_time();
+  float sline = s_start;
+  float run_time = start_time;
+
+  const float dt = integration_time_delta_; 
+  const int num_trajectory_points = static_cast<int>(std::ceil(delta_time / dt))+1;
+  dynamic::Trajectory traj(num_trajectory_points, int(StateDefinition::MIN_STATE_SIZE));
+  for (int i = 0; i < traj.rows(); i++) {
+    const dynamic::State current_state = FrenetStateToDynamicState(
+      FrenetState(sline, current_lat_dist, current_long_vel, lateral_velocity), center_line);
+    traj(i, StateDefinition::TIME_POSITION) = run_time; 
+    traj(i, StateDefinition::X_POSITION) = current_state[dynamic::StateDefinition::X_POSITION];
+    traj(i, StateDefinition::Y_POSITION) = current_state[dynamic::StateDefinition::Y_POSITION];
+    traj(i, StateDefinition::THETA_POSITION) = current_state[dynamic::StateDefinition::THETA_POSITION];
+    traj(i, StateDefinition::VEL_POSITION) = current_state[dynamic::StateDefinition::VEL_POSITION];
+    current_lat_dist = current_lat_dist + lateral_velocity * dt;
+    current_long_vel = current_long_vel + longitudinal_acceleration * dt;
+    sline = sline + current_long_vel * dt;
+    run_time += dt;
+  }
 
   set_last_action(Action(DiscreteAction(active_motion_)));
-
   this->set_last_trajectory(traj);
   return traj;
 }

@@ -82,7 +82,7 @@ TEST(behavior_motion_primitives_plan, behavior_test) {
   traj1 = behavior.Plan(0.5, world1);
   EXPECT_NEAR(traj1(traj1.rows() - 1,
                     StateDefinition::X_POSITION),
-              5.0*0.5 + 2/2*0.5*0.5, 0.1);
+              5.0*0.5 + 2/2*0.5*0.5, 0.05);
 
   // Y Longitudinal
   init_state << 0.0, 0.0, 0.0, B_PI_2, 0.0;

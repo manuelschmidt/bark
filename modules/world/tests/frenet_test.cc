@@ -74,7 +74,7 @@ TEST(frenet_state_one_way, slope_05) {
   test_state_two_way(1, 4, B_PI_2, 5, line);
 
   // state on right side of path with orientation on path
-  //test_state_two_way(-1, 5, B_PI_2, 5, line);
+  test_state_two_way(-1, 5, B_PI_2, 5, line);
 }
 
 TEST(frenet_state_two_way, straight_line_right) {
