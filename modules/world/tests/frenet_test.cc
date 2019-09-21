@@ -42,16 +42,39 @@ void test_state_one_way(const float x, const float y,
   EXPECT_NEAR(frenet_state.vlon, vlon,0.001);
 }
 
-TEST(frenet_state_one_way, correct_decomposition) {
+TEST(frenet_state_one_way, slope_1) {
 
   // some line with three points from x=1 to x=10, y=0
   Line line;
+  line.add_point(Point2d(0,0));
   line.add_point(Point2d(1,1));
   line.add_point(Point2d(2,2));
   line.add_point(Point2d(4,4));
 
   // state on path with orientation on path
-  test_state_one_way(1 , 0, atan2(1,1), 5, line);
+  test_state_one_way(1 , 0, atan2(1,1), 5, line,
+                    -sqrt(0.5),sqrt(0.5),0, 5);
+}
+
+TEST(frenet_state_one_way, slope_05) {
+
+  // some line with three points from x=1 to x=10, y=0
+  Line line;
+  line.add_point(Point2d(-4,-2));
+  line.add_point(Point2d(-2,-1));
+  line.add_point(Point2d(2,1));
+  line.add_point(Point2d(4,2));
+
+  // state on path with orientation orthogonal on path
+  test_state_one_way(1 , 0.5, B_PI_2, 5.5, line,
+                    0, sqrt(5*5+2.5*2.5), cos(B_PI_2-atan2(2,1))*5.5,
+                    sin(B_PI_2-atan2(2,1))*5.5);
+
+  // state on left side of path with orientation on path
+  test_state_two_way(1, 4, B_PI_2, 5, line);
+
+  // state on right side of path with orientation on path
+  //test_state_two_way(-1, 5, B_PI_2, 5, line);
 }
 
 TEST(frenet_state_two_way, straight_line_right) {

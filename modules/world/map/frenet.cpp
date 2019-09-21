@@ -61,7 +61,7 @@ FrenetState::FrenetState(const modules::models::dynamic::State& state, const mod
   const auto velocity = state[modules::models::dynamic::StateDefinition::VEL_POSITION];
   const auto orientation = modules::geometry::norm_0_2PI(state[modules::models::dynamic::StateDefinition::THETA_POSITION]);
   vlon = cos(std::abs(orientation-tangent_angle)) * velocity;
-  vlat = sqrt(velocity*velocity - vlon*vlon)*sign;  
+  vlat = sin(std::abs(orientation-tangent_angle)) * velocity;  
 }
 
 
@@ -77,6 +77,7 @@ modules::models::dynamic::State FrenetStateToDynamicState(
   const auto position = line_point + normal * frenet_state.lat; // todo check if direction fits sign definition
 
   // calculate angle from frenet velocities
+  std::cout << frenet_state.vlat << ", " << frenet_state.vlon << std::endl;
   const auto angle = atan2(frenet_state.vlat, frenet_state.vlon) + line_angle; // todo che
 
   const auto velocity = sqrt(frenet_state.vlon * frenet_state.vlon + 
