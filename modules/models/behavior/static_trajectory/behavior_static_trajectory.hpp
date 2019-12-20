@@ -25,14 +25,16 @@ using StateRowVector = Eigen::Matrix<State::Scalar, 1, Eigen::Dynamic>;
 
 class BehaviorStaticTrajectory : public BehaviorModel {
  public:
+  BehaviorStaticTrajectory(commons::Params* params);
   BehaviorStaticTrajectory(commons::Params* params,
                            const Trajectory& static_trajectory);
   Trajectory Plan(float delta_time,
                   const world::ObservedWorld& observed_world) override;
   std::shared_ptr<BehaviorModel> Clone() const override;
+  const Trajectory& get_static_trajectory() const;
 
  private:
-
+  static Trajectory trajectory_from_listlist_float(std::vector<std::vector<float>> list);
   std::pair<int,int> interpolate(const double t, StateRowVector *interpolated) const;
   Trajectory static_trajectory_;
 };

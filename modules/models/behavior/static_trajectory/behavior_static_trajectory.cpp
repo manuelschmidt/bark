@@ -15,6 +15,14 @@ namespace behavior {
 
 using modules::models::dynamic::StateDefinition;
 
+BehaviorStaticTrajectory::BehaviorStaticTrajectory(commons::Params *params)
+    : BehaviorModel(params),
+      static_trajectory_(
+          trajectory_from_listlist_float(params->get_listlist_float(
+              "static_trajectory",
+              "List of states that form a static trajectory to follow",
+              {{}}))) {}
+
 BehaviorStaticTrajectory::BehaviorStaticTrajectory(
     commons::Params *params, const Trajectory &static_trajectory)
     : BehaviorModel(params), static_trajectory_(static_trajectory) {}
@@ -73,6 +81,20 @@ std::shared_ptr<BehaviorModel> BehaviorStaticTrajectory::Clone() const {
   std::shared_ptr<BehaviorStaticTrajectory> model_ptr =
       std::make_shared<BehaviorStaticTrajectory>(*this);
   return std::dynamic_pointer_cast<BehaviorModel>(model_ptr);
+}
+Trajectory BehaviorStaticTrajectory::trajectory_from_listlist_float(
+    std::vector<std::vector<float>> list) {
+  Trajectory traj(list.size(), list[0].size());
+  for (int i = 0; i < traj.rows(); ++i) {
+    assert(list[i].size() == static_cast<size_t>(traj.cols()));
+    for (int j = 0; j < traj.cols(); ++j) {
+      traj(i, j) = list[i][j];
+    }
+  }
+  return traj;
+}
+const Trajectory &BehaviorStaticTrajectory::get_static_trajectory() const {
+  return static_trajectory_;
 }
 
 }  // namespace behavior

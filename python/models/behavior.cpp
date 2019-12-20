@@ -9,6 +9,7 @@
 #include "modules/models/behavior/motion_primitives/motion_primitives.hpp"
 #include "modules/models/behavior/dynamic_model/dynamic_model.hpp"
 #include "modules/models/behavior/idm/idm_classic.hpp"
+#include "modules/models/behavior/static_trajectory/behavior_static_trajectory.hpp"
 #include "python/models/plan/plan.hpp"
 
 namespace py = pybind11;
@@ -18,6 +19,7 @@ using modules::models::behavior::BehaviorConstantVelocity;
 using modules::models::behavior::BehaviorMotionPrimitives;
 using modules::models::behavior::DynamicBehaviorModel;
 using modules::models::behavior::BehaviorIDMClassic;
+using modules::models::behavior::BehaviorStaticTrajectory;
 
 using std::shared_ptr;
 void python_behavior(py::module m) {
@@ -93,6 +95,14 @@ void python_behavior(py::module m) {
         return "bark.behavior.DynamicBehaviorModel";
       });
 
+  py::class_<BehaviorStaticTrajectory,
+             BehaviorModel,
+             shared_ptr<BehaviorStaticTrajectory>>(m, "BehaviorStaticTrajectory")
+      .def(py::init<modules::commons::Params *>())
+      .def_property_readonly("static_trajectory", &BehaviorStaticTrajectory::get_static_trajectory)
+      .def("__repr__", [](const BehaviorStaticTrajectory &b) {
+        return "bark.behavior.BehaviorStaticTrajectory";
+      });
   
   // must be at the end to have definitions of other models available
   python_behavior_plan(m);
