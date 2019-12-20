@@ -6,9 +6,9 @@ cc_test(
     copts = ["-Iexternal/gtest/include"],
     deps = [
         "//modules/geometry",
-        "//modules/models/dynamic:dynamic",
-        "@gtest//:main",
+        "//modules/models/dynamic",
         "@boost//:geometry",
+        "@gtest//:main",
     ],
 )
 
@@ -20,9 +20,9 @@ cc_test(
     copts = ["-Iexternal/gtest/include"],
     deps = [
         "//modules/geometry",
-        "//modules/models/dynamic:dynamic",
+        "//modules/models/dynamic",
         #"//modules/models/execution/mpc:mpc",
-        "//modules/models/execution/interpolation:interpolation",
+        "//modules/models/execution/interpolation",
         "@gtest//:main",
     ],
 )
@@ -35,11 +35,11 @@ cc_test(
     copts = ["-Iexternal/gtest/include"],
     deps = [
         "//modules/geometry",
-        "//modules/models/dynamic:dynamic",
-        "//modules/models/behavior/motion_primitives:motion_primitives",
-        "//modules/world:world",
-        "@gtest//:main",
+        "//modules/models/behavior/motion_primitives",
+        "//modules/models/dynamic",
+        "//modules/world",
         "@com_github_eigen_eigen//:eigen",
+        "@gtest//:main",
     ],
 )
 
@@ -67,42 +67,60 @@ cc_test(
     ],
     copts = ["-Iexternal/gtest/include"],
     deps = [
-        "//modules/geometry",
-        "//modules/models/behavior/idm:idm_classic",
-        "//modules/models/behavior/constant_velocity:constant_velocity",
-        "//modules/models/execution/interpolation:interpolation",
-        "@gtest//:main",
-        "@com_github_eigen_eigen//:eigen",
         ":make_test_world",
+        "//modules/geometry",
+        "//modules/models/behavior/constant_velocity",
+        "//modules/models/behavior/idm:idm_classic",
+        "//modules/models/execution/interpolation",
+        "@com_github_eigen_eigen//:eigen",
+        "@gtest//:main",
+    ],
+)
+
+cc_binary(
+    name = "behavior_static_trajectory_test",
+    srcs = [
+        "behavior_static_trajectory_test.cc",
+    ],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "//modules/geometry",
+        "//modules/models/behavior/static_trajectory",
+        "@com_github_eigen_eigen//:eigen",
+        "@gtest//:main",
     ],
 )
 
 cc_library(
-    name="make_test_world",
-    srcs=[
-        "make_test_world.cpp"
+    name = "make_test_world",
+    srcs = [
+        "make_test_world.cpp",
     ],
     hdrs = [
-        "make_test_world.hpp"
-    ],
-    deps = [
-        "//modules/geometry",
-        "//modules/models/behavior/idm:idm_classic",
-        "//modules/models/behavior/constant_velocity:constant_velocity",
-        "//modules/models/execution/interpolation:interpolation",
-        "@com_github_eigen_eigen//:eigen",
+        "make_test_world.hpp",
     ],
     visibility = ["//visibility:public"],
+    deps = [
+        "//modules/geometry",
+        "//modules/models/behavior/constant_velocity",
+        "//modules/models/behavior/idm:idm_classic",
+        "//modules/models/execution/interpolation",
+        "@com_github_eigen_eigen//:eigen",
+    ],
 )
 
 py_test(
-  name = "py_behavior_model_test",
-  srcs = ["py_behavior_model_test.py"],
-  data = ['//python:bark.so',
-          '//modules/runtime/tests:xodr_data'],
-  imports = ['../../../python/'],
-  deps = ["//modules/runtime/commons:parameters",
-          "//modules/runtime/commons:xodr_parser",
-          "//modules/runtime:runtime",
-          "//modules/runtime/scenario/scenario_generation:scenario_generation"],
+    name = "py_behavior_model_test",
+    srcs = ["py_behavior_model_test.py"],
+    data = [
+        "//modules/runtime/tests:xodr_data",
+        "//python:bark.so",
+    ],
+    imports = ["../../../python/"],
+    deps = [
+        "//modules/runtime",
+        "//modules/runtime/commons:parameters",
+        "//modules/runtime/commons:xodr_parser",
+        "//modules/runtime/scenario/scenario_generation",
+    ],
 )
