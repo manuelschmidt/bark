@@ -3,13 +3,15 @@
 # This software is released under the MIT License.
 # https://opensource.org/licenses/MIT
 
+from bark.world.agent import Agent
 from bark.models.behavior import BehaviorStaticTrajectory
 from bark.models.dynamic import StateDefinition
-from bark.geometry import *
-from bark.geometry.standard_shapes import *
+from bark.world.goal_definition import GoalDefinition, GoalDefinitionPolygon
+from bark.geometry import Point2d, Polygon2d
+from modules.runtime.scenario.scenario_generation.model_json_conversion import ModelJsonConversion
+# Interaction dataset tools
 from python.utils import dataset_reader
 from python.utils import dict_utils
-import copy
 import numpy as np
 
 
@@ -23,10 +25,7 @@ def bark_state_from_motion_state(state):
     return bark_state.reshape((1, int(StateDefinition.MIN_STATE_SIZE)))
 
 
-def trajectory_from_trackfile(filename, agent_id, start=0, end=None):
-    # TODO(luis): Pull up and pass track dict instead
-    track_dictionary = dataset_reader.read_tracks(filename)
-    track = track_dictionary[agent_id]
+def trajectory_from_track(track, start=0, end=None):
     states = list(dict_utils.get_item_iterator(track.motion_states))
     if end is None:
         end = states[-1][0]
@@ -39,10 +38,7 @@ def trajectory_from_trackfile(filename, agent_id, start=0, end=None):
     return listlistfloat
 
 
-def shape_from_trackfile(filename, agent_id):
-    # TODO(luis): Pull up and pass track dict instead
-    track_dictionary = dataset_reader.read_tracks(filename)
-    track = track_dictionary[agent_id]
+def shape_from_track(track):
     length = track.length
     width = track.width
     pose = [0.0, 0.0, 0.0]
@@ -52,14 +48,56 @@ def shape_from_trackfile(filename, agent_id):
     return poly
 
 
-def BehaviorInteractionDataset(params):
-    print(params)
-    fname = params["filename"]
-    track_id = params["track_id"]
-    start = params["start_offset", "The timestamp in ms when to start the trajectory", 0]
-    end = params["end_offset", "The timestamp in ms when to end the trajectory", None]
+def init_state_from_track(track, start):
+    state = track.motion_states[start]
+    return bark_state_from_motion_state(state).reshape((int(StateDefinition.MIN_STATE_SIZE), 1))
+
+
+def goal_definition_from_track(track, end):
+    motion_state = track.motion_states[end]
+    bark_state = bark_state_from_motion_state(motion_state)
+    goal_polygon = Polygon2d(np.array([0.0, 0.0, 0.0]),
+                             [Point2d(-1.5, 0),
+                              Point2d(-1.5, 8),
+                              Point2d(1.5, 8),
+                              Point2d(1.5, 0)])
+    goal_polygon = goal_polygon.translate(Point2d(bark_state[0, int(StateDefinition.X_POSITION)],
+                                                  bark_state[0, int(StateDefinition.Y_POSITION)]))
+    goal_definition = GoalDefinitionPolygon(goal_polygon)
+    return goal_definition
+
+
+def behavior_from_track(track, params, start, end):
     # Do not write the trajectory to the original parameter object
-    # temp_params = copy.deepcopy(params)
     temp_params = params
-    temp_params["static_trajectory"] = trajectory_from_trackfile(fname, track_id, start, end)
+    temp_params["static_trajectory"] = trajectory_from_track(track, start, end)
     return BehaviorStaticTrajectory(temp_params)
+
+
+def track_from_trackfile(filename, track_id):
+    track_dictionary = dataset_reader.read_tracks(filename)
+    track = track_dictionary[track_id]
+    return track
+
+
+def agent_from_trackfile(track_params, param_server):
+    fname = track_params["filename"]
+    track_id = track_params["track_id"]
+    track = track_from_trackfile(fname, track_id)
+    start = track_params["start_offset", "The timestamp in ms when to start the trajectory", None]
+    end = track_params["end_offset", "The timestamp in ms when to end the trajectory", None]
+    if start is None:
+        start = track.time_stamp_ms_first
+    if end is None:
+        end = track.time_stamp_ms_last
+    model_converter = ModelJsonConversion()
+    bark_agent = Agent(
+        init_state_from_track(track, start),
+        behavior_from_track(track, param_server, start, end),
+        model_converter.convert_model(track_params["dynamic_model"], param_server),
+        model_converter.convert_model(track_params["execution_model"], param_server),
+        shape_from_track(track),
+        param_server.addChild("agent"),
+        goal_definition_from_track(track, end),
+        track_params["map_interface"])
+    return bark_agent
