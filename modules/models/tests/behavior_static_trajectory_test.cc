@@ -20,7 +20,7 @@ using modules::world::ObservedWorld;
 using modules::commons::DefaultParams;
 
 TEST(behavior_static_trajectory_plan, plan) {
-  Trajectory static_traj(4, StateDefinition::MIN_STATE_SIZE);
+  Trajectory static_traj(4, static_cast<int>(StateDefinition::MIN_STATE_SIZE));
   static_traj <<
   0, 0, 0, 0, 1,
   1, 1, 0, 0, 1,
@@ -31,7 +31,7 @@ TEST(behavior_static_trajectory_plan, plan) {
   WorldPtr world_ptr = std::make_shared<World>(&params);
   ObservedWorld observed_world(world_ptr, 0);
   Trajectory traj;
-  StateRowVector expected(StateDefinition::MIN_STATE_SIZE);
+  StateRowVector expected(static_cast<int>(StateDefinition::MIN_STATE_SIZE));
 
   // Return all
   traj = model.Plan(3, observed_world);
