@@ -65,6 +65,7 @@ cc_library(
         "//modules/models/behavior/dynamic_model",
         "//modules/models/behavior/idm:idm_classic",
         "//modules/models/behavior/motion_primitives",
+        "//modules/models/behavior/static_trajectory",
         "//python/models/plan:planners",
         "@com_github_eigen_eigen//:eigen",
         "@pybind11",
